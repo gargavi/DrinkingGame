@@ -12,7 +12,10 @@ export const homeSlice = createSlice({
         "drive": false,
         "cheese_touch": false,
         "random_characters": false,
-    }
+        "nsfw": true,
+    }, 
+    length: 10, 
+    refresh: true
   },
   reducers: {
     setPlayers: (state, action) => {
@@ -24,11 +27,14 @@ export const homeSlice = createSlice({
     },
     removePlayer: (state, action) => {
       state.players = state.players.filter((player) => player != action.payload)
+    },
+    setRefresh: (state, action) => {
+      state.refresh = !state.refresh;
     }
   },
 });
 
-export const {setPlayers, setGames, removePlayer} = homeSlice.actions;
+export const {setPlayers, setGames, removePlayer, setRefresh} = homeSlice.actions;
 
 
 export default homeSlice.reducer;

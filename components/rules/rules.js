@@ -18,12 +18,15 @@ function Rules({games, setGames}) {
                     <Pressable style = {games["random_characters"] ? styles.pressed_button: styles.button} onPress = {() => {setGames("random_characters")} }>
                         <Text style = {games["random_characters"] ? styles.selected_text: styles.text}> Characters </Text>
                     </Pressable>
+                    <Pressable style = {games["nsfw"] ? styles.pressed_button: styles.button} onPress = {() => {setGames("nsfw")} }>
+                        <Text style = {games["nsfw"] ? styles.selected_text: styles.text}> NSFW </Text>
+                    </Pressable>
                 </ScrollView> 
             </View>
-            <Link to = "/players" >
+            <Link to = "/game" >
                 <Text style = {styles.nextlink}> Next </Text> 
             </Link>
-            <Link to = "/" >
+            <Link to = "/players">
                 <Text style = {styles.prevlink}> Prev </Text> 
             </Link>
         </View>

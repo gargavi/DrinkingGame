@@ -8,6 +8,8 @@ import Home from "./components/home/home";
 import Players from "./components/players/players";
 import Rules from "./components/rules/rules";
 
+import Game from "./components/game/game";
+
 import {useFonts} from "@expo-google-fonts/inter"; 
 import { 
   Quicksand_300Light,
@@ -37,6 +39,7 @@ export default function App() {
             <Route exact path = "/" element={<Home/>}/> 
             <Route path = "/players" element={<Players/>}/>
             <Route path = "/gamerules" element = {<Rules/>} />
+            <Route path = "/game" element = {<Game/>} />
           </Routes>
         </View>
         </NativeRouter>
