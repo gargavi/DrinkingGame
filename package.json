@@ -32,7 +32,8 @@
     "react-native-web": "0.17.1",
     "react-redux": "^7.2.6",
     "react-router": "^6.0.2",
-    "react-router-native": "^6.0.2"
+    "react-router-native": "^6.0.2",
+    "socket.io-client": "^4.4.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9"

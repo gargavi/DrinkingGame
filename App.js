@@ -1,45 +1,51 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, { useState } from 'react';
+import * as Font from "expo-font";
 import { StyleSheet, Text, View } from 'react-native';
 import {Provider} from "react-redux";
 import {NativeRouter, Route, Routes, Link} from "react-router-native";
 import store from "./components/store/store";
 import Home from "./components/home/home";
-import Players from "./components/players/players";
-import Rules from "./components/rules/rules";
 
-import Game from "./components/game/game";
+import Lobby from "./components/lobby/lobby"
+import Create from "./components/create/create";
 
-import {useFonts} from "@expo-google-fonts/inter"; 
-import { 
-  Quicksand_300Light,
-  Quicksand_400Regular,
-  Quicksand_500Medium,
-  Quicksand_600SemiBold,
-  Quicksand_700Bold 
-} from '@expo-google-fonts/quicksand'
 import AppLoading from "expo-app-loading";
 
+
+const fetchFonts = () => {
+  return Font.loadAsync({
+    "Cotton": require("./fonts/Cotton-Regular.ttf")
+  })
+}
+
+
 export default function App() {
-  let [fontsLoaded] = useFonts({
-    Quicksand_300Light,
-  Quicksand_400Regular,
-  Quicksand_500Medium,
-  Quicksand_600SemiBold,
-  Quicksand_700Bold 
-  });
-  if (!fontsLoaded) {
-    return <AppLoading/>
+
+  const [dataload, setLoad] = useState(false)
+  if (!dataload) {
+    return <AppLoading
+      startAsync={fetchFonts}
+      onError={() => console.log("error")}
+      onFinish = {() => setLoad(true)}
+    
+    />
   }
+
+  
+
+
   return (
     <Provider store = {store} >
       <NativeRouter>
         <View>
           <Routes>
             <Route exact path = "/" element={<Home/>}/> 
-            <Route path = "/players" element={<Players/>}/>
+            {/* <Route path = "/players" element={<Players/>}/>
             <Route path = "/gamerules" element = {<Rules/>} />
-            <Route path = "/game" element = {<Game/>} />
+            <Route path = "/game" element = {<Game/>} /> */}
+            <Route path = "/lobby" element = {<Lobby/>} />
+            <Route path = "/create" element = {<Create/>} />
           </Routes>
         </View>
         </NativeRouter>

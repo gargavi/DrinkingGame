@@ -15,14 +15,24 @@ export const homeSlice = createSlice({
         "nsfw": true,
     }, 
     length: 10, 
-    refresh: true
+    name: "", 
+    room: "",
+    admin: false,
+    refresh: true, 
+    roomData: {}
   },
   reducers: {
     setPlayers: (state, action) => {
-      state.players.push(action.payload); 
+      state.players = (action.payload); 
     },
+    setRoomData: (state, action) => {
+      state.roomData = action.payload
+    },
+    setAdmin: (state, action) => {
+      state.admin = action.payload;
+    }, 
     setGames: (state,action) => {
-        
+
         state.games[action.payload] = !state.games[action.payload]
     },
     removePlayer: (state, action) => {
@@ -30,11 +40,17 @@ export const homeSlice = createSlice({
     },
     setRefresh: (state, action) => {
       state.refresh = !state.refresh;
-    }
+    }, 
+    setName: (state, action) => {
+      state.name = action.payload; 
+    },
+    setRoom: (state, action) => {
+      state.room = action.payload; 
+    },
   },
 });
 
-export const {setPlayers, setGames, removePlayer, setRefresh} = homeSlice.actions;
+export const {setPlayers, setGames, removePlayer, setRefresh, setName, setRoom, setRoomData} = homeSlice.actions;
 
 
 export default homeSlice.reducer;
