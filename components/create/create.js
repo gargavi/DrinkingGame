@@ -2,10 +2,10 @@ import React, {useState, useEffect} from "react";
 import {StyleSheet, View, KeyboardAvoidingView, Image, Text, TextInput, Pressable} from "react-native"; 
 import {connect} from "react-redux"; 
 import {useNavigate} from "react-router-native";
-import {setPlayers, setGames, setName, setRoomData, setRoom} from "../home/homeSlice";
+import {setPlayers, setGames, setName, setRoomData, setRoom, setAdmin} from "../home/homeSlice";
 import socket from "../socket.js";
 
-function Create({setRoomData, setPlayers, roomData, name, room, players}) {
+function Create({setRoomData, setRoom, setPlayers, roomData, setAdmin,name, room, players}) {
     const history = useNavigate(); 
     const [controller, setController] = useState(false)
     const [errors, setErrors] = useState("")
@@ -18,6 +18,22 @@ function Create({setRoomData, setPlayers, roomData, name, room, players}) {
         })
 
     }, [])
+
+    function createRoom() {
+        const roomName = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+        const room =roomName.slice(0, 7)
+        setRoom(room); 
+        socket.emit("create", {namer: name, room: room.toLowerCase(), controller: controller}, (data) => {
+            if ("errors" in data) {
+                setErrors(data["errors"])
+            } else {
+                setAdmin(true)
+                setPlayers(data["userdata"])
+                setRoomData(data["room"])
+                history("/lobby")
+            }
+        })
+    }
 
     return ( 
         <View style={styles.container}>
@@ -35,7 +51,7 @@ function Create({setRoomData, setPlayers, roomData, name, room, players}) {
            <Text style = {styles.descrip}> All games will be played through the host device </Text>
            </View>
            
-           <Pressable style = {styles.Button} onPress = {() => history("/lobby")}>
+           <Pressable style = {styles.Button} onPress = {() => createRoom()}>
                <Text style = {styles.ButtonText}> Next </Text>
            </Pressable>
            </View>
@@ -79,7 +95,7 @@ const styles = StyleSheet.create({
         justifyContent: "space-around", 
         width: "70%", 
         backgroundColor: "rgba(255,255,255, .7)",
-        padding: "5%", 
+        padding: "2%", 
         marginBottom: "10%"
     }, 
     normal: {
@@ -88,6 +104,7 @@ const styles = StyleSheet.create({
         flexDirection: "column", 
         justifyContent: "space-around", 
         width: "70%", 
+        padding: "2%", 
         marginBottom: "10%"
 
     }, 
@@ -141,6 +158,6 @@ return ({
     roomData: state.home.roomData
 })
 }
-const mapDispatchToProps = {setPlayers,setRoomData, setGames, setRoom, setName}
+const mapDispatchToProps = {setPlayers,setRoomData,setAdmin, setGames, setRoom, setName}
 
 export default connect(mapStateToProps, mapDispatchToProps)(Create);  

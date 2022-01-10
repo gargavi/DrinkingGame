@@ -1,15 +1,15 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as Font from "expo-font";
 import { StyleSheet, Text, View } from 'react-native';
 import {Provider} from "react-redux";
 import {NativeRouter, Route, Routes, Link} from "react-router-native";
 import store from "./components/store/store";
 import Home from "./components/home/home";
-
+import socket from "./components/socket"
 import Lobby from "./components/lobby/lobby"
 import Create from "./components/create/create";
-
+import Characters from "./components/characters/characters";
 import AppLoading from "expo-app-loading";
 
 
@@ -32,8 +32,6 @@ export default function App() {
     />
   }
 
-  
-
 
   return (
     <Provider store = {store} >
@@ -46,6 +44,7 @@ export default function App() {
             <Route path = "/game" element = {<Game/>} /> */}
             <Route path = "/lobby" element = {<Lobby/>} />
             <Route path = "/create" element = {<Create/>} />
+            <Route path = "/characters" element = {<Characters/>} />
           </Routes>
         </View>
         </NativeRouter>

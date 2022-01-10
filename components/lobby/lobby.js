@@ -1,26 +1,65 @@
 import React, {useState, useEffect} from "react"; 
-import {StyleSheet, View, KeyboardAvoidingView, Image, Text, TextInput, Pressable} from "react-native"; 
+import {StyleSheet, View, KeyboardAvoidingView, Image, Text, TextInput, Pressable, Keyboard} from "react-native"; 
 import {connect} from "react-redux"; 
-import {useNavigate} from "react-router-native";
-import {setPlayers, setGames, setName, setRoomData, setRoom} from "../home/homeSlice";
+import {useNavigate, Link} from "react-router-native";
+import BouncyCheckbox from "react-native-bouncy-checkbox"
+import {setPlayers, setGames, setName, setRoomData, setRoom, setStart} from "../home/homeSlice";
 import socket from "../socket.js";
+import { setStatusBarBackgroundColor } from "expo-status-bar";
 
-function Lobby({setRoomData, setPlayers, roomData, name, room, players}) {
+function Lobby({setRoomData, setPlayers, roomData, setStart, name, room, players, admin}) {
     const history = useNavigate(); 
     const [shown, setShown] = useState(false)
     const [errors, setErrors] = useState("")
-    
+    const [minigameDiag, setMiniGameDiag] = useState(false)
+
+    const [drinkLimit, setDrinkLimit] = useState(roomData["limit"])
+    const [cheese_touch, setCheese] = useState(roomData["cheese_touch"])
+    const [gameMode, setGameMode] = useState(roomData["controller"])
+    const [minigames, setMiniGames] = useState(roomData["minigames"])
+    const [update, setUpdate] = useState()
     useEffect(()=> { 
 
         socket.on("roomUpdate", (data) => { 
             setPlayers(data["userdata"])
             setRoomData(data["room"])
+            setCheese(data["room"]["cheese_touch"])
+            setGameMode(data["room"]["controller"])
+            setMiniGames(data["room"]["minigames"])
+        })
+        socket.on("start", ()=> {
+            setStart(true)
+            history("/characters") 
+        } )
+
+        return () => {}
+        
+    }, [])
+
+    function updateMiniGame(key) {
+        minigames[key] = !minigames[key]
+
+        setMiniGames({
+        ...minigames,  [key]: !minigames[key] 
+        })
+    }
+
+    function updateRoomInfo() {
+        socket.emit("update", {limit: drinkLimit, cheese_touch: cheese_touch, gameMode: gameMode, minigames: minigames}, (data) => {
+            const a = 1 
         })
 
-    }, [])
+    }
   
+    function StartGame() {
+        socket.emit("start", (data) => {
+            if ("errors" in data) { 
+                alert(data["errors"])
+            }
+        })
+    }
 
-    console.log(roomData)
+
     const player_names = players.map((player, index) => {
 
         if (player["name"]==name) {
@@ -34,38 +73,62 @@ function Lobby({setRoomData, setPlayers, roomData, name, room, players}) {
         }
     })
 
+    const minigamelist = Object.keys(minigames).map((key, index) => 
+        {
+            return (
+                    <BouncyCheckbox 
+                    key = {index}
+                    disabled = {!admin} 
+                    isChecked = {!minigames[key]}
+                    text = {key}
+                    textStyle = {styles.bouncytext}
+                    iconStyle ={styles.checkicon}
+                    unfillColor = "#3F89F9"
+                    fillColor = "transparent"
+                    style = {styles.bouncy}
+                    onPress = {() => updateMiniGame(key)}
+                    />
+            )
+        }
+    )
+
     return ( 
         <View style={styles.container}>
+
+            {(shown || minigameDiag) && <Pressable style = {styles.exit} onPress = {() => {setShown(false);setMiniGameDiag(false)}}>
+                    <Text style = {styles.exitText}> X </Text>
+                </Pressable>}
             {shown && <View style = {styles.dialogue}>
+            <Text style = {styles.minigameTitle}> Game Settings </Text>
+            <Text style = {styles.subheader}> Drink Limit </Text>
+            <Text style = {styles.para}> The max number of sips allowed per minigame.
+             Any number above 6 (?) should only be chosen with full understanding of the players’ limits. </Text>
+            <Text style = {styles.subheader}> Cheese Touch </Text>
+            <Text style = {styles.para}> If you are on the same square as someone with the cheese touch, you get it and
+             drink twice as much. However, you can pass it on.  </Text>
+            <Text style = {styles.subheader}> Game Mode  </Text>
+            <Text style = {styles.para}> Controller: players will use their own devices to play the games. Includes more interactive games like Basketball and Horse Racing.</Text>
+            <Text style = {styles.para}> Spectator: players will play these games off the screen and the host device will be used to input answers. .</Text>
+            
+            </View>}
+
+            {minigameDiag && <View style = {styles.dialogue}>
             <View style = {styles.diagmini}>
-                <Text style = {styles.gametitle}> Game Setting </Text>
-                <View style = {styles.drinklimit}>
-                <Image source = {require("../photos/drink.png")}  style = {styles.drink}/>
-                    <View style = {styles.drinkinfo}>
-                        <Text style = {styles.gamelabel}> Drink Limit </Text>
-                        <Text style = {styles.number}> {roomData["limit"]} sips </Text>
-                    </View>
-                </View> 
-                <View style = {styles.row}>
-                    <Text style = {styles.gamelabel}> Cheese Touch </Text>
-                    <Text style = {styles.toggle}> {roomData["cheese_touch"] ? "On": "Off" } </Text>
-                </View> 
-                <View style = {styles.row}>
-                    <Text  style = {styles.gamelabel}> Game Mode </Text>
-                    <Text style = {styles.toggle}> {roomData["controller"] ? "Controller": "Spectator" } </Text>
-                </View> 
+                <Text style = {styles.minigameTitle}> MiniGames </Text>
+                {minigamelist}
             </View>
-            <View style = {styles.minigame}>
-                    <Text  style = {styles.gamelabel}> MiniGames </Text>
-                    <Text style = {styles.toggle}> Minigames </Text>
-                </View> 
-    
 
             </View>}
+
+            <Text> {update} </Text>
             <KeyboardAvoidingView
              style = {styles.center}
                 behavior="position" 
            >
+            <Pressable style = {styles.homebtn} onPress = {()=> history("/")}>
+                <Text style = {styles.home}> Home </Text>
+            </Pressable>
+            
             <Text style = {styles.title}> Room Code </Text>
             <Text style = {styles.room}> {room} </Text>
             <Text style = {styles.waiting}> Waiting for the Host </Text>
@@ -81,27 +144,55 @@ function Lobby({setRoomData, setPlayers, roomData, name, room, players}) {
                 <Image source = {require("../photos/drink.png")}  style = {styles.drink}/>
                 <View style = {styles.drinkinfo}>
                     <Text style = {styles.gamelabel}> Drink Limit </Text>
-                    <Text style = {styles.number}> {roomData["limit"]} sips </Text>
+                    {admin && <TextInput
+                    style = {styles.number}
+                    onChangeText={setDrinkLimit}
+                    keyboardType="numeric"
+                    maxLength = {1}
+                    returnKeyType="done"
+                    value = {drinkLimit.toString()}
+                    onSubmitEditing = {() => {Keyboard.dismiss()}}
+                    /> }
+                    {!admin && <Text style = {styles.number}> {drinkLimit} </Text>}
                 </View>
                 </View> 
                 <View style = {styles.row}>
                     <Text style = {styles.gamelabel}> Cheese Touch </Text>
-                    <Text style = {styles.toggle}> {roomData["cheese_touch"] ? "On": "Off" } </Text>
+                    <Pressable  style = { admin ? styles.toggleadmin: styles.toggle} disabled = {!admin} onPress = {() => setCheese(!cheese_touch)}> 
+                    <Text style = {styles.toggletext} > {cheese_touch ? "On": "Off" } </Text> 
+                    </Pressable>
                 </View> 
                 <View style = {styles.row}>
                     <Text  style = {styles.gamelabel}> Game Mode </Text>
-                    <Text style = {styles.toggle}> {roomData["controller"] ? "Controller": "Spectator" } </Text>
+                    <Pressable style = { admin ? styles.toggleadmin: styles.toggle} disabled = {!admin} onPress = {() => setGameMode(!gameMode)} >
+                        <Text style = {styles.toggletext} > {gameMode ? "Controller": "Spectator" } </Text>
+                    </Pressable>
                 </View> 
                 <View style = {styles.row}>
                 <Text  style = {styles.gamelabel}> MiniGames </Text>
-                    <Text style = {styles.toggle}> Minigames </Text>
+                    <Pressable style = {admin? styles.toggleadmin: styles.toggle} onPress = {() => setMiniGameDiag(true)} > 
+                    
+                        <Text style = {styles.toggletext}> Minigames  </Text>
+                    </Pressable>                    
                 </View> 
-
+                
                 <Pressable style = {styles.question} onPress = {() => setShown(!shown)}> 
                 <Text style = {styles.questionText}> ? </Text> 
             
                 </Pressable>
             </View>
+            
+            {(admin || room == "coolguy") && 
+            <View style = {styles.adminBtns}>
+            <Pressable style = {styles.updateBtn} onPress = {() => updateRoomInfo()}> 
+                <Text style = {styles.updateBtnText}> Update </Text>
+            </Pressable>
+            <Pressable style = {styles.updateBtn} onPress = {() => StartGame()}> 
+                <Text style = {styles.updateBtnText}> Start </Text>
+            </Pressable>    
+            </View>}
+ 
+
             
             
             </KeyboardAvoidingView>
@@ -114,6 +205,7 @@ const styles = StyleSheet.create({
       height: "100%",
       padding: "10%",
       paddingTop: "30%",
+      paddingBottom: "2%",
       display: "flex",
       flexDirection: "column",
       justifyContent: "flex-start"
@@ -128,6 +220,14 @@ const styles = StyleSheet.create({
         alignItems: "center", 
         justifyContent: "flex-start"
     },
+    homebtn: {
+        alignSelf: "center", 
+        position: "absolute", 
+        top: -40
+    }, 
+    home: {
+        fontFamily: "Cotton"
+    }, 
     title: {
         fontFamily: "Cotton", 
         fontSize: 20.35, 
@@ -178,11 +278,11 @@ const styles = StyleSheet.create({
         borderWidth: 2, 
         borderStyle: "solid",
         width:  300,
-        flex: 3,
+        flex: 4,
         alignSelf: "center", 
         margin: 0, 
         borderRadius: 10, 
-        paddingBottom: "5%"
+        paddingBottom: "8%"
     }, 
     gametitle: {
         fontSize: 36, 
@@ -245,15 +345,60 @@ const styles = StyleSheet.create({
         overflow: "hidden",
         fontFamily: "Cotton"
     },
+    toggleadmin: {
+        borderRadius: 10, 
+        borderColor: "black", 
+        borderStyle: "solid", 
+        borderWidth: 2,
+        textAlign: "center",
+        padding: "2%",
+        color: "black", 
+        backgroundColor: "#3F89F9",
+        overflow: "hidden",
+        fontFamily: "Cotton"
+    }, 
+    toggletext: {
+        color: "white",
+        fontFamily: "Cotton", 
+        fontSize: 20
+    },
+    adminBtns: {
+        flex: 1, 
+        display: "flex", 
+        flexDirection: "row", 
+        justifyContent: "space-around"
+    }, 
+    updateBtn: {
+        borderRadius: 10, 
+        borderColor: "black", 
+        borderStyle: "solid", 
+        borderWidth: 2,
+        textAlign: "center",
+        flex: .25,
+        padding: "2%",
+        marginTop: "5%",
+        color: "black", 
+        justifyContent: "center",
+        backgroundColor: "#3F89F9",
+        overflow: "hidden",
+        fontFamily: "Cotton", 
+        width: "20%", 
+        alignSelf: "center"
+    }, 
+    updateBtnText: {
+        fontFamily: "Cotton", 
+        color: "white", 
+        alignSelf: "center"
+    },
     question: {
         color: "black", 
         fontFamily: "Cotton", 
         backgroundColor: "white",
-        position: "relative", 
+        position: "absolute", 
         left: "85%", 
         width: 20,
         height: 20,
-        bottom: "-2%",
+        bottom: "4%",
         borderRadius: 100, 
         borderStyle: "solid", 
         borderColor: "black",
@@ -275,15 +420,68 @@ const styles = StyleSheet.create({
         borderColor: "black", 
         borderStyle: "solid",
         borderWidth: 2, 
+        justifyContent: "space-evenly",
         flexDirection: "column",
-        alignItems: "center"
     }, 
     diagmini: {
         flex: 3
     },
+    subheader: {
+        color: "black", 
+        fontFamily: "Cotton", 
+        fontSize: 24,
+        alignSelf: "flex-start", 
+    }, 
+    para: {
+ 
+        fontFamily: 'Helvetica', 
+        fontSize: 16, 
+    }, 
+    exit: {
+        backgroundColor: "#3F89F9",
+        position: "absolute", 
+        top: "19%",
+        left: "105%",
+        zIndex: 3,
+        width: 30,
+        height: 30,
+        textAlign: "center",
+        justifyContent: "center",
+        alignItems: "center",
+        borderRadius: 100, 
+        borderColor: "black", 
+        borderStyle: "solid", 
+        borderWidth: 2
+    }, 
+    exitText: {
+        fontFamily: "Cotton", 
+        color: "white", 
+        fontSize: 25
+
+    },
     minigame: {
         flex: 4, 
         marginTop: "10%"
+    }, 
+    minigameTitle: {
+        fontFamily: "Cotton", 
+        fontSize: 48,
+        color: "#3F89F9", 
+    }, 
+    bouncy: {
+        marginTop: "4%", 
+    },
+    bouncytext: {
+        fontFamily: "Cotton", 
+        fontWeight: "bold",
+        color: "black",
+        fontSize: 24
+    }, 
+    checkicon: {
+        borderColor: "black", 
+        borderWidth: 2, 
+        borderStyle: "solid", 
+        borderRadius: 4
     }
 
 
@@ -295,9 +493,10 @@ return ({
     name: state.home.name,
     room: state.home.room, 
     players: state.home.players, 
-    roomData: state.home.roomData
+    roomData: state.home.roomData, 
+    admin: state.home.admin
 })
 }
-const mapDispatchToProps = {setPlayers,setRoomData, setGames, setRoom, setName}
+const mapDispatchToProps = {setPlayers,setRoomData, setGames,setStart, setRoom, setName}
 
 export default connect(mapStateToProps, mapDispatchToProps)(Lobby);  

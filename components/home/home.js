@@ -1,18 +1,19 @@
-import React, {useState} from "react"; 
+import React, {useEffect, useState} from "react"; 
 import {StyleSheet, View, KeyboardAvoidingView, Image, Text, TextInput, Pressable} from "react-native"; 
 import {connect} from "react-redux"; 
 import {Link} from "react-router-native";
 import {withRouter, useNavigate} from "react-router-native";
-import {setPlayers, setGames, setName, setRoomData, setRoom} from "./homeSlice";
+import {setPlayers, setGames, setName, setRoomData, setAdmin, setRoom} from "./homeSlice";
 import {useFonts} from "@expo-google-fonts/inter"
 import socket from "../socket.js";
 
-function Home({games, setRoomData, setPlayers, name, room, setName, setRoom}) {
+function Home({games, setRoomData, setAdmin, setPlayers, name, room, setName, setRoom}) {
     const history = useNavigate(); 
     const [shown, setShown] = useState(false)
     const [errors, setErrors] = useState("")
     function joinTeam() {
-        socket.emit("join", {namer: name, room: room}, (data) => {
+        setAdmin(false)
+        socket.emit("join", {namer: name, room: room.toLowerCase()}, (data) => {
             if ("errors" in data) {
                 setErrors(data["errors"])
             } else {
@@ -23,26 +24,26 @@ function Home({games, setRoomData, setPlayers, name, room, setName, setRoom}) {
         })
     }
 
+    useEffect(() => {
+        socket.on('ping', function(data){
+            socket.emit('pong', {beat: 1});
+        });
+
+    }, [])
+
     function createTeam() {
 
         history("/create")
-        // const roomName = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-        // const room =roomName.slice(0, 7)
-        // setRoom(room); 
-        // socket.emit("create", {namer: name, room: room}, (data) => {
-        //     if ("errors" in data) {
-        //         setErrors(data["errors"])
-        //     } else {
-        //         setPlayers(data["userdata"])
-        //         setRoomData(data["room"])
-        //         history("/lobby")
-        //     }
-        // })
+        
     }
 
     return ( 
         <View style={styles.container}>
             {shown && <View style = {styles.dialogue}>
+                <Pressable style = {styles.exit} onPress = {() => setShown(false)}>
+                <Text style = {styles.exitText}> X </Text>
+                </Pressable>
+               
                 <Text style = {styles.title}>
                     HOW TO
                 </Text>
@@ -209,6 +210,7 @@ const styles = StyleSheet.create({
         bottom: "5%",
         right: "4%", 
         zIndex: 1,
+        overflow:"visible"
     }, 
     dialogue: {
         backgroundColor: "white", 
@@ -217,8 +219,9 @@ const styles = StyleSheet.create({
         position: "absolute", 
         top: "20%", 
         left: "12.5%", 
-        zIndex: 1, 
+        zIndex: 2, 
         padding: "10%",
+        paddingTop: "0%",
         borderRadius: 20, 
         borderColor: "black", 
         borderStyle: "solid",
@@ -226,6 +229,27 @@ const styles = StyleSheet.create({
         flexDirection: "column",
         alignItems: "center"
     }, 
+    exit: {
+        backgroundColor: "#3F89F9",
+        position: "relative", 
+        bottom: 12, 
+        left: 140,
+        width: 30,
+        height: 30,
+        textAlign: "center",
+        justifyContent: "center",
+        alignItems: "center",
+        borderRadius: 100, 
+        borderColor: "black", 
+        borderStyle: "solid", 
+        borderWidth: 2
+    }, 
+    exitText: {
+        fontFamily: "Cotton", 
+        color: "white", 
+        fontSize: 25
+
+    },
     title: { 
         color: "#3F89F9",
         fontFamily: "Cotton", 
@@ -248,6 +272,6 @@ return ({
     room: state.home.room
 })
 }
-const mapDispatchToProps = {setPlayers,setRoomData, setGames, setRoom, setName}
+const mapDispatchToProps = {setPlayers, setAdmin, setRoomData, setGames, setRoom, setName}
 
 export default connect(mapStateToProps, mapDispatchToProps)(Home);  
