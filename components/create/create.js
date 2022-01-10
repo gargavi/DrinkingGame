@@ -7,7 +7,7 @@ import socket from "../socket.js";
 
 function Create({setRoomData, setRoom, setPlayers, roomData, setAdmin,name, room, players}) {
     const history = useNavigate(); 
-    const [controller, setController] = useState(false)
+    const [lite, setLite] = useState(false)
     const [errors, setErrors] = useState("")
     
     useEffect(()=> { 
@@ -23,7 +23,7 @@ function Create({setRoomData, setRoom, setPlayers, roomData, setAdmin,name, room
         const roomName = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
         const room =roomName.slice(0, 7)
         setRoom(room); 
-        socket.emit("create", {namer: name, room: room.toLowerCase(), controller: controller}, (data) => {
+        socket.emit("create", {namer: name, room: room.toLowerCase(), lite: lite}, (data) => {
             if ("errors" in data) {
                 setErrors(data["errors"])
             } else {
@@ -40,15 +40,15 @@ function Create({setRoomData, setRoom, setPlayers, roomData, setAdmin,name, room
            <View style = {styles.center}>
                <Text style = {styles.title}> Choose your game mode  </Text>
                <Text style = {styles.title2}> (This will affect the types of playable minigames)</Text>
-           <View style = {controller ? styles.selected : styles.normal} onTouchStart = {() => setController(true)}>
+           <View style = {lite ? styles.selected : styles.normal} onTouchStart = {() => setLite(true)}>
                <Image source = {require("../photos/tmp_image.png")}  style = {styles.image}/>
-               <Text style = {styles.mode}> Controller </Text>
-                <Text style = {styles.descrip}> Players will use their own devices as controllers for the games </Text>
+               <Text style = {styles.mode}> Lite </Text>
+                <Text style = {styles.descrip}> Users can join the room but will only be able to view the prompts instead of being able to play </Text>
            </View>
-           <View style = {controller ? styles.normal : styles.selected} onTouchStart = {() => setController(false)}>
+           <View style = {lite ? styles.normal : styles.selected} onTouchStart = {() => setLite(false)}>
            <Image source = {require("../photos/tmp_image.png")}  style = {styles.image}/>
-           <Text style = {styles.mode}> Spectator </Text>
-           <Text style = {styles.descrip}> All games will be played through the host device </Text>
+           <Text style = {styles.mode}> Classic </Text>
+           <Text style = {styles.descrip}> Users will play usnig their phones as controllers</Text>
            </View>
            
            <Pressable style = {styles.Button} onPress = {() => createRoom()}>
