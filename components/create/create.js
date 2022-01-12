@@ -2,22 +2,13 @@ import React, {useState, useEffect} from "react";
 import {StyleSheet, View, KeyboardAvoidingView, Image, Text, TextInput, Pressable} from "react-native"; 
 import {connect} from "react-redux"; 
 import {useNavigate} from "react-router-native";
-import {setPlayers, setGames, setName, setRoomData, setRoom, setAdmin} from "../home/homeSlice";
+import {setPlayers, setRoomData, setRoom, setAdmin, setSocket} from "../home/homeSlice";
 import socket from "../socket.js";
 
-function Create({setRoomData, setRoom, setPlayers, roomData, setAdmin,name, room, players}) {
+function Create({setRoomData, setRoom, setPlayers, setSocket, setAdmin,name}) {
     const history = useNavigate(); 
     const [lite, setLite] = useState(false)
-    const [errors, setErrors] = useState("")
     
-    useEffect(()=> { 
-
-        socket.on("roomUpdate", (data) => { 
-            setPlayers(data["userdata"])
-            setRoomData(data["room"])
-        })
-
-    }, [])
 
     function createRoom() {
         const roomName = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
@@ -30,6 +21,9 @@ function Create({setRoomData, setRoom, setPlayers, roomData, setAdmin,name, room
                 setAdmin(true)
                 setPlayers(data["userdata"])
                 setRoomData(data["room"])
+                if ("socketid" in data) {
+                    setSocket(data["socketid"])
+                }
                 history("/lobby")
             }
         })
@@ -158,6 +152,7 @@ return ({
     roomData: state.home.roomData
 })
 }
-const mapDispatchToProps = {setPlayers,setRoomData,setAdmin, setGames, setRoom, setName}
+
+const mapDispatchToProps = {setPlayers,setRoomData,setAdmin, setSocket, setRoom}
 
 export default connect(mapStateToProps, mapDispatchToProps)(Create);  

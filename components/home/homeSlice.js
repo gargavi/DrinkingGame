@@ -20,7 +20,9 @@ export const homeSlice = createSlice({
     room: "",
     admin: false,
     refresh: true, 
-    roomData: {}
+    roomData: {}, 
+    socket: null, 
+    
   },
   reducers: {
     setPlayers: (state, action) => {
@@ -34,6 +36,9 @@ export const homeSlice = createSlice({
     },
     setAdmin: (state, action) => {
       state.admin = action.payload;
+    }, 
+    setSocket: (state, action) => {
+      state.socket = action.payload
     }, 
     setGames: (state,action) => {
 
@@ -54,7 +59,7 @@ export const homeSlice = createSlice({
   },
 });
 
-export const {setPlayers, setAdmin, setStart, setGames, removePlayer, setRefresh, setName, setRoom, setRoomData} = homeSlice.actions;
+export const {setPlayers, setAdmin, setStart, setGames, removePlayer, setRefresh, setName, setRoom, setRoomData, setSocket} = homeSlice.actions;
 
 
 export default homeSlice.reducer;

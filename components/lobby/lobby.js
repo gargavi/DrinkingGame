@@ -1,30 +1,29 @@
 import React, {useState, useEffect} from "react"; 
 import {StyleSheet, View, KeyboardAvoidingView, Image, Text, TextInput, Pressable, Keyboard} from "react-native"; 
 import {connect} from "react-redux"; 
-import {useNavigate, Link} from "react-router-native";
+import {useNavigate} from "react-router-native";
 import BouncyCheckbox from "react-native-bouncy-checkbox"
-import {setPlayers, setGames, setName, setRoomData, setRoom, setStart} from "../home/homeSlice";
+import {setPlayers, setRoomData, setStart} from "../home/homeSlice";
 import socket from "../socket.js";
-import { setStatusBarBackgroundColor } from "expo-status-bar";
 
 function Lobby({setRoomData, setPlayers, roomData, setStart, name, room, players, admin}) {
     const history = useNavigate(); 
     const [shown, setShown] = useState(false)
     const [errors, setErrors] = useState("")
     const [minigameDiag, setMiniGameDiag] = useState(false)
+    const [newplayer, setNewPlayer] = useState('')
 
     const [drinkLimit, setDrinkLimit] = useState(roomData["limit"])
     const [cheese_touch, setCheese] = useState(roomData["cheese_touch"])
-    const [gameMode, setGameMode] = useState(roomData["controller"])
+    const [gameMode, setGameMode] = useState(roomData["lite"])
     const [minigames, setMiniGames] = useState(roomData["minigames"])
-    const [update, setUpdate] = useState()
     useEffect(()=> { 
 
         socket.on("roomUpdate", (data) => { 
             setPlayers(data["userdata"])
             setRoomData(data["room"])
             setCheese(data["room"]["cheese_touch"])
-            setGameMode(data["room"]["controller"])
+            setGameMode(data["room"]["lite"])
             setMiniGames(data["room"]["minigames"])
         })
         socket.on("start", ()=> {
@@ -42,6 +41,18 @@ function Lobby({setRoomData, setPlayers, roomData, setStart, name, room, players
         setMiniGames({
         ...minigames,  [key]: !minigames[key] 
         })
+    }
+
+    function addPlayer() {
+ 
+        socket.emit("addPlayer", {name: newplayer}, (data) => {
+            if ("errors" in data) {
+                alert(data["errors"])
+            } else {
+                setPlayers(data["userdata"])
+            }
+        })
+        setNewPlayer("")
     }
 
     function updateRoomInfo() {
@@ -72,6 +83,8 @@ function Lobby({setRoomData, setPlayers, roomData, setStart, name, room, players
             )
         }
     })
+
+    const all = Object.keys(minigames).every((key) => minigames[key])
 
     const minigamelist = Object.keys(minigames).map((key, index) => 
         {
@@ -107,8 +120,8 @@ function Lobby({setRoomData, setPlayers, roomData, setStart, name, room, players
             <Text style = {styles.para}> If you are on the same square as someone with the cheese touch, you get it and
              drink twice as much. However, you can pass it on.  </Text>
             <Text style = {styles.subheader}> Game Mode  </Text>
-            <Text style = {styles.para}> Controller: players will use their own devices to play the games. Includes more interactive games like Basketball and Horse Racing.</Text>
-            <Text style = {styles.para}> Spectator: players will play these games off the screen and the host device will be used to input answers. .</Text>
+            <Text style = {styles.para}> Lite: This game version is more compact - the host will have prompts/minigames that people will play without controllers. Users that join the room will be able to view the same prompts. </Text>
+            <Text style = {styles.para}> Classic: Imagine Mario Party - you will play the games using your phone as a controller and move along a virtual board game. Visit "https://wwww.avigarg.me/{room}" to see your board </Text>
             
             </View>}
 
@@ -119,8 +132,6 @@ function Lobby({setRoomData, setPlayers, roomData, setStart, name, room, players
             </View>
 
             </View>}
-
-            <Text> {update} </Text>
             <KeyboardAvoidingView
              style = {styles.center}
                 behavior="position" 
@@ -137,6 +148,17 @@ function Lobby({setRoomData, setPlayers, roomData, setStart, name, room, players
                 {player_names}
 
             </View>
+            {admin && players.length <= 12 && <View style = {styles.med}>
+             <TextInput
+                style = {styles.input}
+                value = {newplayer}
+                maxLength = {10}
+                onChangeText= {text => setNewPlayer(text)}
+                returnKeyType="done"
+                placeholder = "Enter Additional Player"
+            />
+            <Pressable style = {styles.add} onPress = {() => addPlayer()}><Text style = {styles.addText}> Add </Text></Pressable>
+            </View>}
 
             <View style = {styles.settings}>
                 <Text style = {styles.gametitle}> Game Setting </Text>
@@ -165,14 +187,14 @@ function Lobby({setRoomData, setPlayers, roomData, setStart, name, room, players
                 <View style = {styles.row}>
                     <Text  style = {styles.gamelabel}> Game Mode </Text>
                     <Pressable style = { admin ? styles.toggleadmin: styles.toggle} disabled = {!admin} onPress = {() => setGameMode(!gameMode)} >
-                        <Text style = {styles.toggletext} > {gameMode ? "Controller": "Spectator" } </Text>
+                        <Text style = {styles.toggletext} > {gameMode ? "Lite": "Classic" } </Text>
                     </Pressable>
                 </View> 
                 <View style = {styles.row}>
                 <Text  style = {styles.gamelabel}> MiniGames </Text>
-                    <Pressable style = {admin? styles.toggleadmin: styles.toggle} onPress = {() => setMiniGameDiag(true)} > 
+                    <Pressable style = {styles.minigameBtn} onPress = {() => setMiniGameDiag(true)} > 
                     
-                        <Text style = {styles.toggletext}> Minigames  </Text>
+                        <Text style = {styles.minigameBtntext}> {all ? "All" : "Custom"} </Text>
                     </Pressable>                    
                 </View> 
                 
@@ -256,6 +278,41 @@ const styles = StyleSheet.create({
         marginTop: "10%", 
         height: "40%"
     }, 
+    med: {
+        flex: .5,
+        display: "flex", 
+        flexDirection: "row",
+        marginTop: "3%", 
+        alignItems: "center",
+        justifyContent: "space-evenly",
+        marginBottom: "8%",
+    },
+    add: {
+        backgroundColor: "#3F89F9", 
+        borderRadius: 10, 
+        borderColor: "black", 
+        borderStyle: "solid", 
+        borderWidth: 2,
+        textAlign: "center",
+
+    }, 
+    addText: {
+        fontFamily: "Cotton",
+        fontSize: 20,
+        color: "white"
+    }, 
+    input: {
+        fontFamily: "Helvetica",
+        borderColor: "black", 
+        borderWidth: 2,
+        backgroundColor: "white", 
+        borderStyle: "solid",
+        fontSize: 20, 
+        borderRadius: 15, 
+        width: "80%", 
+        textAlign: "center", 
+        height: "100%",
+     },
     name: {
         minWidth: "33%", 
         fontSize: 18,
@@ -318,7 +375,8 @@ const styles = StyleSheet.create({
     number: {
         fontFamily: "Cotton",
         fontSize: 40, 
-        color: "#3F89F9"
+        color: "#3F89F9", 
+        flex: 3
     }, 
     row: {
         display: "flex", 
@@ -327,11 +385,15 @@ const styles = StyleSheet.create({
         width: "60%", 
         justifyContent: "space-around", 
         flex: 1, 
+        alignItems: "center",
         marginTop: "4%"
     }, 
     gamelabel: {
         fontFamily: "Cotton",
         fontSize: 18,
+        flex: 1,
+        textAlign: "center", 
+        marginRight: "10%"
     }, 
     toggle: {
         borderRadius: 10, 
@@ -343,7 +405,8 @@ const styles = StyleSheet.create({
         color: "black", 
         backgroundColor: "#C4c4c4",
         overflow: "hidden",
-        fontFamily: "Cotton"
+        fontFamily: "Cotton",
+        flex: 1
     },
     toggleadmin: {
         borderRadius: 10, 
@@ -355,12 +418,28 @@ const styles = StyleSheet.create({
         color: "black", 
         backgroundColor: "#3F89F9",
         overflow: "hidden",
-        fontFamily: "Cotton"
+        fontFamily: "Cotton", 
+        flex: 1
     }, 
+    minigameBtn: {
+        textAlign: "center",
+        color: "black", 
+        alignSelf: "center", 
+        flex: 1
+    },
+    minigameBtntext: {
+        color: "#3F89F9",
+        fontFamily: "Cotton", 
+        fontSize: 20, 
+        textAlign: "center",
+        textDecorationStyle: "solid",
+        textDecorationLine: "underline"
+    },
     toggletext: {
         color: "white",
         fontFamily: "Cotton", 
-        fontSize: 20
+        fontSize: 20,
+        textAlign: "center",
     },
     adminBtns: {
         flex: 1, 
@@ -421,6 +500,7 @@ const styles = StyleSheet.create({
         borderStyle: "solid",
         borderWidth: 2, 
         justifyContent: "space-evenly",
+        alignItems: "center",
         flexDirection: "column",
     }, 
     diagmini: {
@@ -497,6 +577,6 @@ return ({
     admin: state.home.admin
 })
 }
-const mapDispatchToProps = {setPlayers,setRoomData, setGames,setStart, setRoom, setName}
+const mapDispatchToProps = {setPlayers,setRoomData,setStart}
 
 export default connect(mapStateToProps, mapDispatchToProps)(Lobby);  

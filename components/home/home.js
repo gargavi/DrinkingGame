@@ -3,25 +3,33 @@ import {StyleSheet, View, KeyboardAvoidingView, Image, Text, TextInput, Pressabl
 import {connect} from "react-redux"; 
 import {Link} from "react-router-native";
 import {withRouter, useNavigate} from "react-router-native";
-import {setPlayers, setGames, setName, setRoomData, setAdmin, setRoom} from "./homeSlice";
+import {setPlayers, setName, setRoomData, setAdmin, setRoom, setSocket} from "./homeSlice";
 import {useFonts} from "@expo-google-fonts/inter"
 import socket from "../socket.js";
 
-function Home({games, setRoomData, setAdmin, setPlayers, name, room, setName, setRoom}) {
+function Home({setRoomData, setAdmin, setPlayers, name, room, setName, setRoom, setSocket}) {
     const history = useNavigate(); 
     const [shown, setShown] = useState(false)
     const [errors, setErrors] = useState("")
     function joinTeam() {
         setAdmin(false)
-        socket.emit("join", {namer: name, room: room.toLowerCase()}, (data) => {
-            if ("errors" in data) {
-                setErrors(data["errors"])
-            } else {
-                setPlayers(data["userdata"])
-                setRoomData(data["room"])
-                history("/lobby")
-            }
-        })
+        if (name == "") {
+            setErrors("Name cannot be empty")
+        } else {
+            socket.emit("join", {namer: name, room: room.toLowerCase()}, (data) => {
+                if ("errors" in data) {
+                    setErrors(data["errors"])
+                } else {
+                    setPlayers(data["userdata"])
+                    setRoomData(data["room"])
+                    if ("socketid" in data) {
+                        setSocket(data["socketid"])
+                    }
+                    history("/lobby")
+                }
+            })
+     
+        }
     }
 
     useEffect(() => {
@@ -29,11 +37,23 @@ function Home({games, setRoomData, setAdmin, setPlayers, name, room, setName, se
             socket.emit('pong', {beat: 1});
         });
 
+        socket.on("roomUpdate", (data) => { 
+            setPlayers(data["userdata"])
+            setRoomData(data["room"])
+        })
+
+
+
+        return () => {}
+
     }, [])
 
     function createTeam() {
-
-        history("/create")
+        if (name == "") {
+            setErrors("Name cannot be empty")
+        }  else {
+            history("/create")
+        }
         
     }
 
@@ -77,6 +97,7 @@ function Home({games, setRoomData, setAdmin, setPlayers, name, room, setName, se
                     value = {name} 
                     placeholder = "ENTER NAME "
                     autoFocus = {true}
+                    maxLength = {10}
                     onChangeText={ text => setName(text)}
                 />
                 <Text style = {styles.label}> Room Code: </Text>
@@ -84,10 +105,11 @@ function Home({games, setRoomData, setAdmin, setPlayers, name, room, setName, se
                 <TextInput 
                     style = {styles.input}
                     value = {room} 
+                    maxLength = {7}
                     placeholder = "ENTER ROOM CODE"
                     onChangeText={ text => setRoom(text)}
                 />
-                <Text> {errors}
+                <Text style = {styles.error}> {errors}
                 </Text>
                 <View style = {styles.buttonCont}>
                 <Pressable style = {styles.joinbutton}  onPress = {() => {joinTeam()}} > 
@@ -121,7 +143,7 @@ const styles = StyleSheet.create({
     center: {
         display: "flex",
         width: "100%",
-        maxHeight: "80%",
+        maxHeight: "70%",
         flexDirection: "column",
         textAlign: "center", 
         alignItems: "center", 
@@ -179,6 +201,14 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "center"
     },
+    error: {
+        fontFamily: "Cotton", 
+        alignSelf: "center",
+        marginTop: "5%",
+        fontSize: 20,
+        color: "red",
+        marginBottom: "0%"
+    }, 
     buttonCont: {
         display: "flex", 
         flexDirection: "row", 
@@ -272,6 +302,6 @@ return ({
     room: state.home.room
 })
 }
-const mapDispatchToProps = {setPlayers, setAdmin, setRoomData, setGames, setRoom, setName}
+const mapDispatchToProps = {setPlayers, setSocket, setAdmin, setRoomData, setRoom, setName}
 
 export default connect(mapStateToProps, mapDispatchToProps)(Home);  

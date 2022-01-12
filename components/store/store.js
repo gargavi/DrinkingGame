@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit'; 
 import homeReducer from "../home/homeSlice";
-import gameReducer from "../game/gameSlice";
+import gameReducer from "../gamePrev/gameSlice";
 import timerReducer from "../timer/timerSlice";
 
 export default configureStore({

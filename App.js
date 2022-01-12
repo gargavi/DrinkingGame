@@ -10,6 +10,8 @@ import socket from "./components/socket"
 import Lobby from "./components/lobby/lobby"
 import Create from "./components/create/create";
 import Characters from "./components/characters/characters";
+import Game from "./components/game/game";
+
 import AppLoading from "expo-app-loading";
 
 
@@ -41,7 +43,8 @@ export default function App() {
             <Route exact path = "/" element={<Home/>}/> 
             {/* <Route path = "/players" element={<Players/>}/>
             <Route path = "/gamerules" element = {<Rules/>} />
-            <Route path = "/game" element = {<Game/>} /> */}
+            */}
+            <Route path = "/game" element = {<Game/>} />
             <Route path = "/lobby" element = {<Lobby/>} />
             <Route path = "/create" element = {<Create/>} />
             <Route path = "/characters" element = {<Characters/>} />

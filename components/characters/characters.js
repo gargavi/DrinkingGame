@@ -1,29 +1,20 @@
-import React, {useState, useEffect} from "react"; 
-import {StyleSheet, View, KeyboardAvoidingView, ScrollView, Image, Text, TextInput, Pressable} from "react-native"; 
+import React, {useState} from "react"; 
+import {StyleSheet, View, ScrollView, Image, Text, Pressable} from "react-native"; 
 import {connect} from "react-redux"; 
 import {useNavigate} from "react-router-native";
-import {setPlayers, setGames, setName, setRoomData, setRoom, setAdmin} from "../home/homeSlice";
+import {setPlayers} from "../home/homeSlice";
 import socket from "../socket.js";
 import {Picker} from "@react-native-picker/picker";
 import characters from "./character_info";
 
-function Characters({setRoomData, setRoom, setPlayers, roomData, setAdmin,name, room, admin, players}) {
+function Characters({setPlayers,name, admin, players}) {
     const history = useNavigate(); 
     const [errors, setErrors] = useState("")
     const [char, setChar] = useState(null)
     const [user, setUser] = useState(name)
     const [update, setUpdate] = useState(1)
     
-    useEffect(()=> { 
 
-        socket.on("roomUpdate", (data) => { 
-            setPlayers(data["userdata"])
-            setRoomData(data["room"])
-        })
-
-        return () => {}
-
-    }, [])
 
     function selectCharacter(character) { 
 
@@ -48,7 +39,7 @@ function Characters({setRoomData, setRoom, setPlayers, roomData, setAdmin,name, 
         return (
             <Pressable key = {index} style = {styles.icon} onPress = {() => setChar(element)}>
                 <Image source = {{"uri": element["image"]}} style = {selected ? styles.selectedimage : styles.image}/>
-                {charc != null && !me_selected && <Text style = {styles.playername}> {charc["name"]} </Text>}
+                {charc != null && !me_selected && <Text style = {charc["name"] == name ? styles.playerMename : styles.playername}> {charc["name"]} </Text>}
                 {charc == null && selected && !me_selected  && <Pressable style = {styles.selectBtn} onPress = {() => selectCharacter(element["character_name"])}><Text style = {styles.selectBtnText}> Select </Text></Pressable>}
                 {me_selected  && <Pressable style = {styles.cancelBtn} onPress = {() => selectCharacter(null)}><Text style = {styles.selectBtnText}> Cancel </Text></Pressable>}
                 
@@ -87,7 +78,7 @@ function Characters({setRoomData, setRoom, setPlayers, roomData, setAdmin,name, 
                     <Text style = {styles.charDescrip}> 
                     {char["character_descrip"]}
                     </Text>}
-                    {all && admin && <Pressable><Text> Next </Text></Pressable>}
+                    {all && admin && <Pressable onPress = {() => history("/game")} style = {styles.Button}><Text style = {styles.ButtonText}> Next </Text></Pressable>}
                     
                 </View>
                 </View>
@@ -177,6 +168,22 @@ const styles = StyleSheet.create({
         fontSize: 24
 
     }, 
+    playerMename: {
+        position: "absolute", 
+        bottom: "40%", 
+        zIndex: 1, 
+        width: 100,
+        alignItems: "center",
+        backgroundColor: "rgba(241, 94, 94, .9)", 
+        borderRadius: 10, 
+        borderColor: "black", 
+        borderWidth: 2, 
+        overflow: "hidden",
+        borderStyle: "solid", 
+        textAlign: "center", 
+        fontFamily: "Cotton", 
+        fontSize: 24
+    },
     playername: {
         position: "absolute", 
         bottom: "40%", 
@@ -239,20 +246,36 @@ const styles = StyleSheet.create({
     }, 
     middle: {
         height: "10%",        
-    }
+    }, 
+    Button: {
+        borderColor: "black", 
+        borderWidth: 2,
+        padding: "2%",
+        borderRadius: 15,
+        textAlign: "center",
+        backgroundColor: "#3F89F9", 
+        color: "white",
+        borderStyle: "solid",
+        display: "flex", 
+        flexDirection: "row",
+        justifyContent: "center"
+    },
+    ButtonText: {
+        color: "white", 
+        fontSize: 25,
+        fontFamily: "Cotton"
+    },
 
   });
 
 const mapStateToProps = (state) => {
 return ({
-    games: state.home.games, 
     name: state.home.name,
     room: state.home.room, 
     admin: state.home.admin,
     players: state.home.players, 
-    roomData: state.home.roomData
 })
 }
-const mapDispatchToProps = {setPlayers,setRoomData,setAdmin, setGames, setRoom, setName}
+const mapDispatchToProps = {setPlayers}
 
 export default connect(mapStateToProps, mapDispatchToProps)(Characters);  
