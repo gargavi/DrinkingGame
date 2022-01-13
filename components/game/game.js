@@ -5,8 +5,11 @@ import {useNavigate} from "react-router-native";
 import {setPlayers, setRoomData, } from "../home/homeSlice";
 import socket from "../socket.js";
 import Dice from "./die";
+import Leader from "./leader";
+//minigames
 import Likely from "./minigames/likely";
-
+import Rather from "./minigames/rather"; 
+import Trivia from "./minigames/trivia"; 
 
 function Game({setRoomData, setPlayers, roomData}) {
     const history = useNavigate(); 
@@ -21,17 +24,10 @@ function Game({setRoomData, setPlayers, roomData}) {
 
     return ( 
         <View style={styles.container}>
-           {/* {roomData != null && roomData["state"] && 
-            <View>
-            <Text> 
-            {roomData["state"]["name"]}   
-            </Text>
-            <Text> 
-            {roomData["state"]["prompt"]}   
-            </Text>
-            </View>
-            } */}
-            {roomData != null && roomData["state"] && roomData["state"]["name"] != "dice" && <Likely/>}
+            {roomData != null && roomData["state"] && roomData["state"]["name"] == "leader" && <Leader/>}
+            {roomData != null && roomData["state"] && roomData["state"]["name"] == "Trivia Drink" && <Trivia/>}
+            {roomData != null && roomData["state"] && roomData["state"]["name"] == "Would You Rather" && <Rather/>}
+            {roomData != null && roomData["state"] && roomData["state"]["name"] == "Most Likely" && <Likely/>}
             {roomData != null && roomData["state"] && roomData["state"]["name"] == "dice" && <Dice/>}
         </View>
     )
