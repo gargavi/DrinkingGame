@@ -6,10 +6,11 @@ import {} from "../../home/homeSlice";
 import socket from "../../socket.js";
 import axios from "axios";
 import endpoint from "../../endpoint";
+import { setLikely } from "./minigameSlice";
 
 import characters from "../../characters/character_info";
 
-function Likely({roomData,name, players, admin}) {
+function Likely({roomData,setLikely, userData, likely, players, admin}) {
     const [dice, setDice] = useState(null)
     const [number, setNumber] = useState(0)
     const [prompt, setPrompt] = useState(null)
@@ -17,10 +18,8 @@ function Likely({roomData,name, players, admin}) {
     const [submitted, setSubmitted] = useState(null)
     const [results, setResults] = useState(null)
 
-    console.log("started likely")
     useEffect(() => {
         socket.on("advanceLikely", (data) => {
-            console.log(data)
             setResults(data)
             setNumber(2)
         })
@@ -29,24 +28,26 @@ function Likely({roomData,name, players, admin}) {
 
     function goNext() {
         setNumber(number + 1) 
-        console.log(roomData)
-        console.log(endpoint)
-        axios.get(endpoint + "all_likely.json").then(results => {
-            setPrompt(results["data"][roomData["state"]["prompt"]])
-            console.log("finished get")
-        }).catch(err => {
-            console.log(err)
-        })
+        if (likely.length == 0) {
+            axios.get(endpoint + "all_likely.json").then(results => {
+                setPrompt(results["data"][roomData["state"]["prompt"]])
+                setLikely(results["data"])
+            }).catch(err => {
+                console.log(err)
+            })    
+        } else {
+            setPrompt(likely[roomData["state"]["prompt"]])
+        }
     }
 
     function selectPlayer(name) {
-        socket.emit("likely", {name}, () => {
+        socket.emit("likely", {name, id: userData["_id"]}, () => {
         })
         setSubmitted(true)
     }
 
     function advance() { 
-        socket.emit("advanceLikely", (data) => {
+        socket.emit("advanceLikely", {id: userData["_id"]},  (data) => {
             if ("errors" in data) {
                 console.log(data["errors"])
             }
@@ -54,8 +55,7 @@ function Likely({roomData,name, players, admin}) {
     }
 
     function nextGame() { 
-        console.log("next")
-        socket.emit("nextGame", () => {
+        socket.emit("nextGame",{id: userData["_id"]}, () => {
         })
         setNumber(0)
         setSelectedPlayer(null)
@@ -71,7 +71,7 @@ function Likely({roomData,name, players, admin}) {
 
         return (
             <Pressable disabled = {roomData["lite"] && !admin} onPress = {() => setSelectedPlayer(play["name"])} style = {styles.icon} key = {index}>
-                <Image style = {styles.image} source = {{"uri": rel_char["image"]}}/>
+                {rel_char && <Image style = {styles.image} source = {{"uri": rel_char["image"]}}/> }
                 <Text style = {styles.playername}>  {play["name"]}</Text>            
                 {selectedplayer == play["name"] && !submitted &&  <Pressable style = {styles.selectBtn} onPress = {() => selectPlayer(play["name"])}><Text style = {styles.selectBtnText}> Select </Text></Pressable>}
                 {selectedplayer == play["name"] && submitted && <Text style = {styles.submitted}> Submitted </Text>}
@@ -296,9 +296,11 @@ return ({
     socketid: state.home.socket, 
     name: state.home.name, 
     players: state.home.players, 
-    admin: state.home.admin
+    admin: state.home.admin, 
+    likely: state.minigame.likely, 
+    userData: state.home.user
 })
 }
-const mapDispatchToProps = {}
+const mapDispatchToProps = {setLikely}
 
 export default connect(mapStateToProps, mapDispatchToProps)(Likely);  

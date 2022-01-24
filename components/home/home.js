@@ -3,11 +3,12 @@ import {StyleSheet, View, KeyboardAvoidingView, Image, Text, TextInput, Pressabl
 import {connect} from "react-redux"; 
 import {Link} from "react-router-native";
 import {withRouter, useNavigate} from "react-router-native";
-import {setPlayers, setName, setRoomData, setAdmin, setRoom, setSocket} from "./homeSlice";
+import {setPlayers, setName, setRoomData, setAdmin, setRoom, setSocket, setUser} from "./homeSlice";
 import {useFonts} from "@expo-google-fonts/inter"
 import socket from "../socket.js";
+import {routerDict} from "../utils";
 
-function Home({setRoomData, setAdmin, setPlayers, name, room, setName, setRoom, setSocket}) {
+function Home({setRoomData, setAdmin, setPlayers,setUser, name, room, userData, setName, setRoom, setSocket}) {
     const history = useNavigate(); 
     const [shown, setShown] = useState(false)
     const [errors, setErrors] = useState("")
@@ -25,6 +26,9 @@ function Home({setRoomData, setAdmin, setPlayers, name, room, setName, setRoom, 
                     if ("socketid" in data) {
                         setSocket(data["socketid"])
                     }
+                    if ("user" in data) {
+                        setUser(data["user"])
+                    }
                     history("/lobby")
                 }
             })
@@ -40,6 +44,23 @@ function Home({setRoomData, setAdmin, setPlayers, name, room, setName, setRoom, 
         socket.on("roomUpdate", (data) => { 
             setPlayers(data["userdata"])
             setRoomData(data["room"])
+            if ("user" in data) {
+                setUser(data["user"])
+            }
+        })
+
+        socket.on("nextGame", (data) => {
+            console.log(data)
+            const room = data["room"]
+            setRoomData(data["room"])
+            setPlayers(data["userdata"])
+            if (room["lite"]) {
+                history(routerDict["lite"][room["state"]["name"]])
+            } else {
+                history(routerDict["classic"][room["state"]["name"]])
+            }
+
+            
         })
 
 
@@ -86,7 +107,7 @@ function Home({setRoomData, setAdmin, setPlayers, name, room, setName, setRoom, 
                     <Text style = {styles.joinButtonText}> Rules/Read More </Text> 
                 </Pressable> 
             </View>}
-            <KeyboardAvoidingView
+            <View
              style = {styles.center}
                 behavior="position" 
            >
@@ -119,7 +140,7 @@ function Home({setRoomData, setAdmin, setPlayers, name, room, setName, setRoom, 
                     <Text style = {styles.joinButtonText}> Create</Text> 
                 </Pressable> 
                 </View>
-            </KeyboardAvoidingView>
+            </View>
             <Pressable style = {styles.question} onPress = {() => setShown(!shown)}> 
                 <Text style = {styles.questionText}> ? </Text> 
             
@@ -135,7 +156,7 @@ const styles = StyleSheet.create({
       backgroundColor: "#FFE248",
       height: "100%",
       padding: "10%",
-      paddingTop: "30%",
+      paddingTop: "20%",
       display: "flex",
       flexDirection: "column",
       justifyContent: "flex-start"
@@ -212,6 +233,7 @@ const styles = StyleSheet.create({
     buttonCont: {
         display: "flex", 
         flexDirection: "row", 
+        width: "100%",
         justifyContent: "space-evenly"
     }, 
     joinButtonText: {
@@ -299,9 +321,10 @@ const mapStateToProps = (state) => {
 return ({
     games: state.home.games, 
     name: state.home.name,
-    room: state.home.room
+    room: state.home.room, 
+    userData: state.home.user
 })
 }
-const mapDispatchToProps = {setPlayers, setSocket, setAdmin, setRoomData, setRoom, setName}
+const mapDispatchToProps = {setPlayers, setSocket, setUser, setAdmin, setRoomData, setRoom, setName}
 
 export default connect(mapStateToProps, mapDispatchToProps)(Home);  

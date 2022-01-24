@@ -5,7 +5,7 @@ import {useNavigate} from "react-router-native";
 import {} from "../home/homeSlice";
 import socket from "../socket.js";
 
-function Dice({roomData, socketid,name }) {
+function Dice({roomData, userData,name }) {
     const history = useNavigate(); 
     const [dice, setDice] = useState(null)
     
@@ -19,13 +19,13 @@ function Dice({roomData, socketid,name }) {
 
 
     function rollDice() {
-        socket.emit("dice",(data) => {
+        socket.emit("dice", {id: userData["_id"]}, (data) => {
             setDice(data["value"])
         } )
     }
 
     function goNext() { 
-        socket.emit("updateInfo", (data) => {
+        socket.emit("updateInfo", {id: userData["_id"]}, (data) => {
             if ("errors" in data) {
                 alert(data["errors"])
             }
@@ -107,7 +107,8 @@ const mapStateToProps = (state) => {
 return ({
     roomData: state.home.roomData,
     socketid: state.home.socket, 
-    name: state.home.name
+    name: state.home.name, 
+    userData: state.home.user
 })
 }
 const mapDispatchToProps = {}

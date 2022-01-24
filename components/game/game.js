@@ -14,7 +14,6 @@ import Trivia from "./minigames/trivia";
 function Game({setRoomData, setPlayers, roomData}) {
     const history = useNavigate(); 
 
-
     useEffect(()=> { 
 
 

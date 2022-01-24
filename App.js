@@ -12,18 +12,23 @@ import Create from "./components/create/create";
 import Characters from "./components/characters/characters";
 import Game from "./components/game/game";
 
-import AppLoading from "expo-app-loading";
+//games 
+import Likely from "./components/game/minigames/likely"
+import Rather from "./components/game/minigames/rather"
+import Trivia from "./components/game/minigames/trivia"
+import Die from "./components/game/die"
+import Leader from "./components/game/leader"
 
+import AppLoading from "expo-app-loading";
 
 const fetchFonts = () => {
   return Font.loadAsync({
-    "Cotton": require("./fonts/Cotton-Regular.ttf")
+    "Cotton": require("./fonts/Cotton-Regular.ttf"), 
+    "fontawesome": require("./fonts/fa-solid-900.ttf")
   })
 }
 
-
 export default function App() {
-
   const [dataload, setLoad] = useState(false)
   if (!dataload) {
     return <AppLoading
@@ -33,7 +38,6 @@ export default function App() {
     
     />
   }
-
 
   return (
     <Provider store = {store} >
@@ -48,6 +52,11 @@ export default function App() {
             <Route path = "/lobby" element = {<Lobby/>} />
             <Route path = "/create" element = {<Create/>} />
             <Route path = "/characters" element = {<Characters/>} />
+            <Route path = "/leader" element = {<Leader/>}/> 
+            <Route path = "/die" element = {<Die/>} /> 
+            <Route path = "/trivia" element = {<Trivia/>} />
+            <Route path = "/likely" element = {<Likely/>} /> 
+            <Route path = "/rather" element = {<Rather/>} /> 
           </Routes>
         </View>
         </NativeRouter>

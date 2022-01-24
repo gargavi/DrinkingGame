@@ -3,10 +3,11 @@ import {StyleSheet, View, KeyboardAvoidingView, Image, Text, TextInput, Pressabl
 import {connect} from "react-redux"; 
 import {useNavigate} from "react-router-native";
 import BouncyCheckbox from "react-native-bouncy-checkbox"
-import {setPlayers, setRoomData, setStart} from "../home/homeSlice";
+import {setPlayers, setRoomData, setStart, setUser} from "../home/homeSlice";
 import socket from "../socket.js";
+import {routerDict} from "../utils"
 
-function Lobby({setRoomData, setPlayers, roomData, setStart, name, room, players, admin}) {
+function Lobby({setRoomData, setPlayers, roomData, userData, setStart, setUser, name, room, players, admin}) {
     const history = useNavigate(); 
     const [shown, setShown] = useState(false)
     const [errors, setErrors] = useState("")
@@ -25,10 +26,18 @@ function Lobby({setRoomData, setPlayers, roomData, setStart, name, room, players
             setCheese(data["room"]["cheese_touch"])
             setGameMode(data["room"]["lite"])
             setMiniGames(data["room"]["minigames"])
+            if ("user" in data) {
+                setUser(data["user"])
+            }
+
         })
-        socket.on("start", ()=> {
+        socket.on("start", (data)=> {
             setStart(true)
-            history("/characters") 
+            if (gameMode) {
+                history(routerDict["lite"][data["state"]["name"]])
+            } else {
+                history("/characters") 
+            }
         } )
 
         return () => {}
@@ -45,7 +54,7 @@ function Lobby({setRoomData, setPlayers, roomData, setStart, name, room, players
 
     function addPlayer() {
  
-        socket.emit("addPlayer", {name: newplayer}, (data) => {
+        socket.emit("addPlayer", {name: newplayer, id: userData["_id"]}, (data) => {
             if ("errors" in data) {
                 alert(data["errors"])
             } else {
@@ -56,14 +65,15 @@ function Lobby({setRoomData, setPlayers, roomData, setStart, name, room, players
     }
 
     function updateRoomInfo() {
-        socket.emit("update", {limit: drinkLimit, cheese_touch: cheese_touch, gameMode: gameMode, minigames: minigames}, (data) => {
+        socket.emit("update", {limit: drinkLimit, cheese_touch: cheese_touch, gameMode: gameMode, minigames: minigames, id: userData["_id"]}, (data) => {
             const a = 1 
         })
 
     }
   
     function StartGame() {
-        socket.emit("start", (data) => {
+
+        socket.emit("start", {id: userData["_id"]}, (data) => {
             if ("errors" in data) { 
                 alert(data["errors"])
             }
@@ -184,12 +194,12 @@ function Lobby({setRoomData, setPlayers, roomData, setStart, name, room, players
                     <Text style = {styles.toggletext} > {cheese_touch ? "On": "Off" } </Text> 
                     </Pressable>
                 </View> 
-                <View style = {styles.row}>
+                {/* <View style = {styles.row}>
                     <Text  style = {styles.gamelabel}> Game Mode </Text>
                     <Pressable style = { admin ? styles.toggleadmin: styles.toggle} disabled = {!admin} onPress = {() => setGameMode(!gameMode)} >
                         <Text style = {styles.toggletext} > {gameMode ? "Lite": "Classic" } </Text>
                     </Pressable>
-                </View> 
+                </View>  */}
                 <View style = {styles.row}>
                 <Text  style = {styles.gamelabel}> MiniGames </Text>
                     <Pressable style = {styles.minigameBtn} onPress = {() => setMiniGameDiag(true)} > 
@@ -574,9 +584,10 @@ return ({
     room: state.home.room, 
     players: state.home.players, 
     roomData: state.home.roomData, 
-    admin: state.home.admin
+    admin: state.home.admin, 
+    userData: state.home.user
 })
 }
-const mapDispatchToProps = {setPlayers,setRoomData,setStart}
+const mapDispatchToProps = {setPlayers,setRoomData,setStart, setUser}
 
 export default connect(mapStateToProps, mapDispatchToProps)(Lobby);  

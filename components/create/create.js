@@ -2,10 +2,10 @@ import React, {useState, useEffect} from "react";
 import {StyleSheet, View, KeyboardAvoidingView, Image, Text, TextInput, Pressable} from "react-native"; 
 import {connect} from "react-redux"; 
 import {useNavigate} from "react-router-native";
-import {setPlayers, setRoomData, setRoom, setAdmin, setSocket} from "../home/homeSlice";
+import {setPlayers, setRoomData, setRoom, setAdmin, setUser, setSocket} from "../home/homeSlice";
 import socket from "../socket.js";
 
-function Create({setRoomData, setRoom, setPlayers, setSocket, setAdmin,name}) {
+function Create({setRoomData, setRoom, setPlayers, setSocket, setUser, setAdmin,name}) {
     const history = useNavigate(); 
     const [lite, setLite] = useState(false)
     
@@ -24,6 +24,9 @@ function Create({setRoomData, setRoom, setPlayers, setSocket, setAdmin,name}) {
                 if ("socketid" in data) {
                     setSocket(data["socketid"])
                 }
+                if ("user" in data) {
+                    setUser(data["user"])
+                }
                 history("/lobby")
             }
         })
@@ -35,12 +38,12 @@ function Create({setRoomData, setRoom, setPlayers, setSocket, setAdmin,name}) {
                <Text style = {styles.title}> Choose your game mode  </Text>
                <Text style = {styles.title2}> (This will affect the types of playable minigames)</Text>
            <View style = {lite ? styles.selected : styles.normal} onTouchStart = {() => setLite(true)}>
-               <Image source = {require("../photos/tmp_image.png")}  style = {styles.image}/>
+               <Image source = {require("../photos/create2.png")}  style = {styles.image}/>
                <Text style = {styles.mode}> Lite </Text>
                 <Text style = {styles.descrip}> Users can join the room but will only be able to view the prompts instead of being able to play </Text>
            </View>
            <View style = {lite ? styles.normal : styles.selected} onTouchStart = {() => setLite(false)}>
-           <Image source = {require("../photos/tmp_image.png")}  style = {styles.image}/>
+           <Image source = {require("../photos/create1.png")}  style = {styles.image}/>
            <Text style = {styles.mode}> Classic </Text>
            <Text style = {styles.descrip}> Users will play usnig their phones as controllers</Text>
            </View>
@@ -153,6 +156,6 @@ return ({
 })
 }
 
-const mapDispatchToProps = {setPlayers,setRoomData,setAdmin, setSocket, setRoom}
+const mapDispatchToProps = {setPlayers,setRoomData,setAdmin, setSocket, setRoom, setUser}
 
 export default connect(mapStateToProps, mapDispatchToProps)(Create);  

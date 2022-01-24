@@ -7,9 +7,12 @@ import socket from "../../socket.js";
 import axios from "axios";
 import endpoint from "../../endpoint";
 
+import { setRather } from "./minigameSlice";
+import { AutoSizeText, ResizeTextMode } from "react-native-auto-size-text";
+
 import characters from "../../characters/character_info";
 
-function Rather({roomData,name, players, admin}) {
+function Rather({roomData,name, setRather, userData, rather, players, admin}) {
     const [dice, setDice] = useState(null)
     const [number, setNumber] = useState(0)
     const [prompt, setPrompt] = useState(null)
@@ -18,34 +21,55 @@ function Rather({roomData,name, players, admin}) {
     const [results, setResults] = useState(null)
     const [correct, setCorrect] = useState(null)
 
+    const [time, setTime] = useState(100)
+    useEffect(() => {
+
+        if (time <= 0) {
+            if (timerId) {
+                clearInterval(timerId)
+                return ;    
+            }
+            setTimeout(() => {
+                advance()
+            }, 2000)
+            return ;
+        } 
+        const timerId = setInterval(() => {
+            setTime(time - 1)
+        }, 1000)
+        return () => clearInterval(timerId)
+
+    }, [time])
+
+
     useEffect(() => {
         socket.on("advanceRather", (data) => {
-            console.log(data)
             setResults(data)
-            if ((choice in data["results"] && 1 - choice in data["results"] && data["results"][choice] >= data["results"][1 - choice]) || !(1 - choice in data["results"]) ) {
-                setCorrect(true) 
-            } else  {
-                setCorrect(false)
-            }
-            
             setNumber(2)
         })
 
-    }, [])
+    }, [choice])
 
     function goNext() {
         setNumber(number + 1) 
-        axios.get(endpoint + "all_rather.json").then(results => {
-            setPrompt(results["data"][roomData["state"]["prompt"]])
-        }).catch(err => {
-            console.log(err)
-        })
+        if (rather.length == 0) {
+            axios.get(endpoint + "all_rather.json").then(results => {
+                setPrompt(results["data"][roomData["state"]["prompt"]])
+                setRather(results["data"])
+            }).catch(err => {
+                console.log(err)
+            })
+        } else {
+            setPrompt(rather[roomData["state"]["prompt"]])
+        }
+        setTime(10)
+ 
     }
 
 
 
-    function advance() { 
-        socket.emit("advanceRather", (data) => {
+    function advance() {
+        socket.emit("advanceRather",{id: userData["_id"]}, (data) => {
             if ("errors" in data) {
                 console.log(data["errors"])
             }
@@ -53,35 +77,25 @@ function Rather({roomData,name, players, admin}) {
     }
 
     function nextGame() { 
-        console.log("next")
-        socket.emit("nextGame", () => {
+        socket.emit("nextGame", {id: userData["_id"]}, () => {
         })
         setNumber(0)
         selectChoice(null)
         setSubmitted(null)
         setResults(null)
         setCorrect(null)
+        setTime(10)
 
     }
 
     function emitChoice(number) {
-        socket.emit("rather", {number}, () => {
+        selectChoice(number)
+        socket.emit("rather", {id: userData["_id"], number}, () => {
 
         })
         setSubmitted(true)
     }
 
-
-    let winnerImage;
-    if (results) {
-        const player = players.find(play => play["name"] == results["winner"])
-        if (player) {
-            const character = characters.find(char => char["character_name"] == player["character"])
-            if (character) {
-                winnerImage = character["image"]
-            }
-        }
-    }
 
 
     return ( 
@@ -91,27 +105,25 @@ function Rather({roomData,name, players, admin}) {
             {number == 0 && <Text style = {styles.loading}> Loading </Text>}
             {number == 1 && 
             <View style = {styles.likely}>
-                <Text style = {styles.discuss}> Choose an Option </Text>
-                <Text style = {styles.prompt}> {prompt && prompt["question"]} </Text>
+                <View style = {styles.promptCont}>
+                  <Text style = {styles.timer}> {time} </Text>
+                    <AutoSizeText mode = {ResizeTextMode.group}  style = {styles.prompt}> {prompt && prompt["question"]} </AutoSizeText>
+                </View>
                 <View style = {styles.choices}>
 
-                    <Pressable style = {styles.choice} onPress = {() => selectChoice(0)}>
+                    <Pressable disabled = {choice != null} style = {choice == 1 ? styles.blueChoiceNot : styles.blueChoice } onPress = {() => emitChoice(0)}>
                         <Text style = {styles.choiceText}> {prompt && prompt["choices"][0]} </Text>
-                        {choice != null && choice == 0 && !submitted &&  <Pressable style = {styles.selectBtn} onPress = {() => emitChoice(0)}><Text style = {styles.selectBtnText}> Select </Text></Pressable>}
-                       {choice != null && choice == 0 && submitted && <Text style = {styles.submitted}> Submitted </Text>}
-         
+                     
                     </Pressable> 
 
-                    <Pressable style = {styles.choice} onPress = {() => selectChoice(1)}>
+                    <Pressable disabled = {choice != null} style = {choice == 0 ? styles.redChoiceNot: styles.redChoice} onPress = {() => emitChoice(1)}>
                         <Text style = {styles.choiceText}> {prompt && prompt["choices"][1]} </Text>
-                        {choice != null && choice == 1 && !submitted &&  <Pressable style = {styles.selectBtn} onPress = {() => emitChoice(1)}><Text style = {styles.selectBtnText}> Select </Text></Pressable>}
-                       {choice != null && choice == 1 && submitted && <Text style = {styles.submitted}> Submitted </Text>}
-         
+                  
                     </Pressable>    
                 </View> 
             </View>}
 
-            {admin && submitted && number == 1 && <Pressable onPress= {() => advance()} style = {styles.Button}><Text style = {styles.ButtonText}> See Results </Text></Pressable>}
+            {admin && number == 1 && <Pressable onPress= {() => advance()} style = {styles.Button}><Text style = {styles.ButtonText}> See Results </Text></Pressable>}
             {!admin && submitted && number == 1 && <Pressable style = {styles.Button}><Text style = {styles.ButtonText}> Waiting for host... </Text></Pressable>}
             {number == 2 && results && 
             <Pressable style = {styles.answer} onPress = {() => nextGame()}>
@@ -152,7 +164,8 @@ const styles = StyleSheet.create({
         flexDirection: "column",
         textAlign: "center", 
         alignItems: "center", 
-        justifyContent: "center"
+        justifyContent: "center", 
+        width: "100%"
     }, 
     gifcont: {
         height: "100%", 
@@ -167,78 +180,69 @@ const styles = StyleSheet.create({
         display: "flex", 
         flexDirection: "column", 
         height: "80%", 
-        alignItems: "center"
+        alignItems: "center", 
+        width: "100%", 
     }, 
     discuss: {
         fontFamily: "Cotton", 
-        fontSize: 40
-    }, 
-    prompt: {
-        fontSize: 60, 
-        fontFamily: "Cotton", 
-        padding: "5%", 
+        fontSize: 40, 
         textAlign: "center"
     }, 
+    promptCont: {
+        height: "20%", 
+        width: "100%",
+        padding: "2%", 
+        flex: 1,
+    }, 
+    prompt: {
+        fontFamily: "Cotton", 
+        textAlign: "center"
+    },  
     choices: {
         display: "flex", 
-        flexDirection: "row", 
+        flexDirection: "column", 
         justifyContent: "space-evenly", 
-        width: "80%", 
+        width: "100%", 
         alignItems: "center", 
-        height: "40%"
+        height: "40%", 
+        flex: 3, 
+        marginTop: "10%"
     }, 
-    choice: { 
-        alignItems: "center",
+    blueChoice: { 
+        flex: 1.5, 
+        justifyContent: "center", 
         backgroundColor: "#3F89F9", 
-        borderRadius: 100, 
-        borderColor: "black", 
-        overflow: "hidden",
-        borderWidth: 2, 
-        borderStyle: "solid", 
-        height: 150, 
-        width: 150, 
-        alignItems: "center", 
-        padding: 20,
-        justifyContent: "flex-start"
+        width: "100%"
     },  
+    blueChoiceNot: { 
+        flex: 1.5, 
+        justifyContent: "center", 
+        backgroundColor: "rgba(63, 137, 249, .3)", 
+        width: "100%"
+    },  
+    redChoice: { 
+        flex: 1.5, 
+        justifyContent: "center", 
+        backgroundColor: "#F15E5E", 
+        width: "100%"
+    },  
+    redChoiceNot: { 
+        flex: 1.5, 
+        justifyContent: "center", 
+        backgroundColor: "rgba(241, 94, 94, .3)", 
+        width: "100%"
+    },
     choiceText: {
         fontFamily: "Cotton", 
-        fontSize: 24, 
+        fontSize: 35, 
         color: "white", 
         textAlign: "center"
     },
-    selectBtn: {
-        position: "absolute", 
-        bottom: "30%", 
-        zIndex: 1, 
-        width: 150,
-        padding: "3%",
-        alignItems: "center",
-        backgroundColor: "rgba(255, 2555, 255, .9)", 
-        borderColor: "black", 
-        overflow: "hidden",
-        borderWidth: 2, 
-        borderStyle: "solid"
-    },
-    selectBtnText: {
+    timer: {
+        color: "red", 
+        alignSelf: "center", 
         fontFamily: "Cotton", 
-        fontSize: 24
-    }, 
-    submitted: {
-        position: "absolute", 
-        bottom: "40%", 
-        zIndex: 1, 
-        width: 100,
-        alignItems: "center",
-        backgroundColor: "rgba(241, 94, 94, .9)", 
-        borderRadius: 10, 
-        borderColor: "black", 
-        borderWidth: 2, 
-        overflow: "hidden",
-        borderStyle: "solid", 
-        textAlign: "center", 
-        fontFamily: "Cotton", 
-        fontSize: 24
+        fontSize: 40
     }, 
     answer: {
         display: "flex", 
@@ -288,9 +292,12 @@ return ({
     socketid: state.home.socket, 
     name: state.home.name, 
     players: state.home.players, 
-    admin: state.home.admin
+    admin: state.home.admin,
+    rather: state.minigame.rather, 
+    userData: state.home.user
+
 })
 }
-const mapDispatchToProps = {}
+const mapDispatchToProps = {setRather}
 
 export default connect(mapStateToProps, mapDispatchToProps)(Rather);  

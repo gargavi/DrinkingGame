@@ -5,7 +5,7 @@ import {useNavigate} from "react-router-native";
 import {} from "../home/homeSlice";
 import socket from "../socket.js";
 
-function Leader({roomData, socketid,name }) {
+function Leader({roomData, userData, socketid,name }) {
     const history = useNavigate(); 
     const [dice, setDice] = useState(null)
     
@@ -18,7 +18,7 @@ function Leader({roomData, socketid,name }) {
     }, [])
 
     function goNext() { 
-        socket.emit("nextGame", (data) => {
+        socket.emit("nextGame",{id: userData["_id"]}, (data) => {
             if ("errors" in data) {
                 alert(data["errors"])
             }
@@ -85,7 +85,8 @@ const mapStateToProps = (state) => {
 return ({
     roomData: state.home.roomData,
     socketid: state.home.socket, 
-    name: state.home.name
+    name: state.home.name,
+    userData: state.home.user
 })
 }
 const mapDispatchToProps = {}

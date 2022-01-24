@@ -7,7 +7,7 @@ import socket from "../socket.js";
 import {Picker} from "@react-native-picker/picker";
 import characters from "./character_info";
 
-function Characters({setPlayers,name, admin, players}) {
+function Characters({setPlayers,name, userData, admin, players}) {
     const history = useNavigate(); 
     const [errors, setErrors] = useState("")
     const [char, setChar] = useState(null)
@@ -18,7 +18,7 @@ function Characters({setPlayers,name, admin, players}) {
 
     function selectCharacter(character) { 
 
-        socket.emit("characterUpdate", {name: user, character}, (data) => {
+        socket.emit("characterUpdate", {name: user, character, id: userData["_id"]}, (data) => {
             
             if ("errors" in data) {
                 alert(data["errors"])
@@ -274,6 +274,7 @@ return ({
     room: state.home.room, 
     admin: state.home.admin,
     players: state.home.players, 
+    userData: state.home.user
 })
 }
 const mapDispatchToProps = {setPlayers}
