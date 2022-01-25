@@ -19,7 +19,7 @@ function Trivia({roomData,name,setTrivia,userData, trivia, players, admin}) {
     const [correct, setCorrect] = useState(null)
     const [penalty, setPenalty] = useState(null)
 
-    const [time, setTime] = useState(1000)
+    const [time, setTime] = useState(10)
 
     useEffect(() => {
 
@@ -146,7 +146,7 @@ function Trivia({roomData,name,setTrivia,userData, trivia, players, admin}) {
     return ( 
         <View style={styles.container}>
            <View style = {number == 0 ? styles.blackcont: styles.center}>
-            {number == 0 && <Pressable style = {styles.gifcont} onPress = {() => goNext()}><Image style = {styles.gif} source = {require("../../photos/most_likely.gif")}/></Pressable> }
+            {number == 0 && <Pressable style = {styles.gifcont} onPress = {() => goNext()}><Image style = {styles.gif} source = {require("../../photos/trivia_gif.gif")}/></Pressable> }
             {number == 0 && <Text style = {styles.loading}> Loading </Text>}
             {number == 1 && 
             <View style = {styles.likely}>
@@ -247,7 +247,8 @@ const styles = StyleSheet.create({
         height: "40%", 
         width: "100%",
         padding: "2%", 
-        paddingTop: "20%",
+        paddingTop: "10%",
+        paddingBottom: "10%",
         flex: 1,
         backgroundColor: "white"
     }, 

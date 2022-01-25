@@ -12,12 +12,16 @@ import Create from "./components/create/create";
 import Characters from "./components/characters/characters";
 import Game from "./components/game/game";
 
-//games 
+//games Classic 
 import Likely from "./components/game/minigames/likely"
 import Rather from "./components/game/minigames/rather"
 import Trivia from "./components/game/minigames/trivia"
 import Die from "./components/game/die"
 import Leader from "./components/game/leader"
+
+//games Lite 
+import LikelyLite from './components/game/minigames/likelyLite';
+import RatherLite from "./components/game/minigames/ratherLite"; 
 
 import AppLoading from "expo-app-loading";
 
@@ -48,15 +52,16 @@ export default function App() {
             {/* <Route path = "/players" element={<Players/>}/>
             <Route path = "/gamerules" element = {<Rules/>} />
             */}
-            <Route path = "/game" element = {<Game/>} />
             <Route path = "/lobby" element = {<Lobby/>} />
             <Route path = "/create" element = {<Create/>} />
             <Route path = "/characters" element = {<Characters/>} />
             <Route path = "/leader" element = {<Leader/>}/> 
             <Route path = "/die" element = {<Die/>} /> 
             <Route path = "/trivia" element = {<Trivia/>} />
-            <Route path = "/likely" element = {<Likely/>} /> 
+            <Route path = "/likely" element = {<Likely/>} />
+            <Route path = "/likelylite" element = {<LikelyLite/>} /> 
             <Route path = "/rather" element = {<Rather/>} /> 
+            <Route path = "/ratherlite" element = {<RatherLite/>} />
           </Routes>
         </View>
         </NativeRouter>

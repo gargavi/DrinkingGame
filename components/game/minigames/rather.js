@@ -101,7 +101,7 @@ function Rather({roomData,name, setRather, userData, rather, players, admin}) {
     return ( 
         <View style={styles.container}>
            <View style = {number == 0 ? styles.blackcont: styles.center}>
-            {number == 0 && <Pressable style = {styles.gifcont} onPress = {() => goNext()}><Image style = {styles.gif} source = {require("../../photos/most_likely.gif")}/></Pressable> }
+            {number == 0 && <Pressable style = {styles.gifcont} onPress = {() => goNext()}><Image style = {styles.gif} source = {require("../../photos/rather_gif.gif")}/></Pressable> }
             {number == 0 && <Text style = {styles.loading}> Loading </Text>}
             {number == 1 && 
             <View style = {styles.likely}>

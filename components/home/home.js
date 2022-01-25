@@ -50,7 +50,6 @@ function Home({setRoomData, setAdmin, setPlayers,setUser, name, room, userData, 
         })
 
         socket.on("nextGame", (data) => {
-            console.log(data)
             const room = data["room"]
             setRoomData(data["room"])
             setPlayers(data["userdata"])
