@@ -6,11 +6,11 @@ import {} from "../../home/homeSlice";
 import socket from "../../socket.js";
 import axios from "axios";
 import endpoint from "../../endpoint";
-import { setLikely } from "./minigameSlice";
+import { setNever } from "./minigameSlice";
 import {AutoSizeText, ResizeTextMode} from "react-native-auto-size-text"
 
 
-function Likely({roomData,setLikely, userData, likely, players, admin}) {
+function Never({roomData,setLikely, userData, never}) {
     const [number, setNumber] = useState(0)
     const [prompt, setPrompt] = useState(null)
     const [time, setTime] = useState(null)
@@ -46,15 +46,15 @@ function Likely({roomData,setLikely, userData, likely, players, admin}) {
 
     function goNext() {
         setNumber(number + 1) 
-        if (likely.length == 0) {
-            axios.get(endpoint + "all_likely.json").then(results => {
+        if (never.length == 0) {
+            axios.get(endpoint + "all_never.json").then(results => {
                 setPrompt(results["data"][roomData["state"]["prompt"]])
-                setLikely(results["data"])
+                setNever(results["data"])
             }).catch(err => {
                 console.log(err)
             })    
         } else {
-            setPrompt(likely[roomData["state"]["prompt"]])
+            setPrompt(never[roomData["state"]["prompt"]])
         }
         setTime(30)
         setPenalty(roomData["state"]["penalty"])
@@ -287,10 +287,10 @@ return ({
     name: state.home.name, 
     players: state.home.players, 
     admin: state.home.admin, 
-    likely: state.minigame.likely, 
+    never: state.minigame.never, 
     userData: state.home.user
 })
 }
-const mapDispatchToProps = {setLikely}
+const mapDispatchToProps = {setNever}
 
-export default connect(mapStateToProps, mapDispatchToProps)(Likely);  
+export default connect(mapStateToProps, mapDispatchToProps)(Never);  

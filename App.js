@@ -24,6 +24,7 @@ import Category from "./components/game/minigames/categories";
 import LikelyLite from './components/game/minigames/likelyLite';
 import RatherLite from "./components/game/minigames/ratherLite"; 
 import CategoryLite from './components/game/minigames/categoryLite';
+import NeverLite from "./components/game/minigames/neverLite"
 
 
 import AppLoading from "expo-app-loading";
@@ -67,6 +68,7 @@ export default function App() {
             <Route path = "/ratherlite" element = {<RatherLite/>} />
             <Route path = "/category" element = {<Category/>} />
             <Route path = "/categoryLite" element = {<CategoryLite/>} />
+            <Route path = "/neverLite" element = {<NeverLite/>} />
           </Routes>
         </View>
         </NativeRouter>

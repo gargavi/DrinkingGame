@@ -9,7 +9,8 @@ const routerDict = {
         "Would You Rather": "/ratherlite", 
         "Categories": "/categoryLite",
         "dice": "/die", 
-        "leader": "/leader"
+        "leader": "/leader",
+        "Never Have I Ever": "/neverLite"
     }, 
     "classic": {
         "Most Likely": "/likely", 
@@ -17,7 +18,8 @@ const routerDict = {
         "Would You Rather": "/rather", 
         "dice": "/die", 
         "leader": "/leader",
-        "Categories": "/category"
+        "Categories": "/category", 
+        "Never Have I Ever": "/neverLite"
     }
 }
 

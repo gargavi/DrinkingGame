@@ -1,7 +1,6 @@
 import React, {useState, useEffect} from "react"; 
-import {StyleSheet, View, KeyboardAvoidingView, Image, Text, ImageBackground, Pressable} from "react-native"; 
-import {connect, connectAdvanced} from "react-redux"; 
-import {useNavigate} from "react-router-native";
+import {StyleSheet, View, Image, Text, ImageBackground, Pressable} from "react-native"; 
+import {connect} from "react-redux"; 
 import {} from "../../home/homeSlice";
 import socket from "../../socket.js";
 import axios from "axios";
@@ -19,7 +18,7 @@ function Category({roomData,setCategories, userData, categories, players, admin}
 
     useEffect(() => {
 
-        if (time && time <= 0) {
+        if (time != null && time <= 0) {
             if (timerId) {
                 clearInterval(timerId)
                 return ;    
@@ -30,7 +29,7 @@ function Category({roomData,setCategories, userData, categories, players, admin}
             return ;
         } 
         let timerId;
-        if (time ){
+        if (time != null ){
             timerId = setInterval(() => {
                 setTime(time - 1)
             }, 1000)
@@ -77,11 +76,10 @@ function Category({roomData,setCategories, userData, categories, players, admin}
             {number == 0 && <Text style = {styles.loading}> Loading </Text>}
             {number == 1 && 
             <View style = {styles.likely}>
-                <Text style = {styles.time}> {time} </Text>
+                <Text style = {styles.userstart}> {user_start} starts </Text>   
                 <ImageBackground source = {require("../../photos/likelyback.png")} style = {styles.wrongback}>
                     <AutoSizeText mode={ResizeTextMode.group} style = {styles.prompt}> {prompt && prompt["question"]} </AutoSizeText>
                 </ImageBackground>
-                <Text style = {styles.userstart}> {user_start} starts </Text>   
                     {number == 1 && <Pressable onPress= {() => setNumber(2)} style = {styles.Button}><Text style = {styles.ButtonText}> Next </Text></Pressable>}
             
             </View>}

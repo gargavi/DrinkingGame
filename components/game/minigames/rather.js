@@ -21,23 +21,29 @@ function Rather({roomData,name, setRather, userData, rather, players, admin}) {
     const [results, setResults] = useState(null)
     const [correct, setCorrect] = useState(null)
 
-    const [time, setTime] = useState(100)
+    const [time, setTime] = useState(null)
     useEffect(() => {
 
-        if (time <= 0) {
+        if (time != null && time <= 0) {
             if (timerId) {
                 clearInterval(timerId)
                 return ;    
             }
             setTimeout(() => {
-                advance()
+                setNumber(2)
             }, 2000)
             return ;
         } 
-        const timerId = setInterval(() => {
-            setTime(time - 1)
-        }, 1000)
-        return () => clearInterval(timerId)
+        let timerId;
+        if (time != null ){
+            timerId = setInterval(() => {
+                setTime(time - 1)
+            }, 1000)
+     
+        }
+        if (timerId) {
+            return () => clearInterval(timerId)
+        }
 
     }, [time])
 
@@ -63,7 +69,7 @@ function Rather({roomData,name, setRather, userData, rather, players, admin}) {
         } else {
             setPrompt(rather[roomData["state"]["prompt"]])
         }
-        setTime(10)
+        setTime(20)
  
     }
 

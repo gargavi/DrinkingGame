@@ -32,7 +32,6 @@ function Lobby({setRoomData, setPlayers, roomData, userData, setStart, setUser, 
 
         })
         socket.on("start", (data)=> {
-            console.log(data)
             setStart(true)
             if (gameMode) {
                 history(routerDict["lite"][data["state"]["name"]])
@@ -48,8 +47,10 @@ function Lobby({setRoomData, setPlayers, roomData, userData, setStart, setUser, 
     function updateMiniGame(key) {
         minigames[key] = !minigames[key]
 
-        setMiniGames({
-        ...minigames,  [key]: !minigames[key] 
+        socket.emit("update", {limit: drinkLimit, cheese_touch: cheese_touch, gameMode: gameMode, minigames: {
+            ...minigames,  [key]: !minigames[key] 
+            }, id: userData["_id"]}, (data) => {
+            const a = 1 
         })
     }
 

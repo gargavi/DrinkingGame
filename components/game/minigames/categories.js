@@ -100,8 +100,8 @@ function Categories({roomData,setCategories, userData, categories, players, admi
             {number == 0 && <Text style = {styles.loading}> Loading </Text>}
             {number == 1 && 
             <View style = {styles.likely}>
-                <Text style = {styles.prompt}> {prompt && prompt["question"]} </Text>
                 <Text style = {styles.userstart}> {user_start} starts </Text>  
+                <Text style = {styles.prompt}> {prompt && prompt["question"]} </Text>
                 {admin && 
                 <View style = {styles.charcont}>
                     {player_icons}
@@ -172,6 +172,10 @@ const styles = StyleSheet.create({
         fontFamily: "Cotton", 
         padding: "5%", 
         textAlign: "center"
+    }, 
+    userstart: {
+        fontFamily: "Cotton", 
+        fontSize: 30
     }, 
     charcont: {
         display: "flex", 
