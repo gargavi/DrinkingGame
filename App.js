@@ -18,10 +18,13 @@ import Rather from "./components/game/minigames/rather"
 import Trivia from "./components/game/minigames/trivia"
 import Die from "./components/game/die"
 import Leader from "./components/game/leader"
+import Category from "./components/game/minigames/categories"; 
 
 //games Lite 
 import LikelyLite from './components/game/minigames/likelyLite';
 import RatherLite from "./components/game/minigames/ratherLite"; 
+import CategoryLite from './components/game/minigames/categoryLite';
+
 
 import AppLoading from "expo-app-loading";
 
@@ -62,6 +65,8 @@ export default function App() {
             <Route path = "/likelylite" element = {<LikelyLite/>} /> 
             <Route path = "/rather" element = {<Rather/>} /> 
             <Route path = "/ratherlite" element = {<RatherLite/>} />
+            <Route path = "/category" element = {<Category/>} />
+            <Route path = "/categoryLite" element = {<CategoryLite/>} />
           </Routes>
         </View>
         </NativeRouter>

@@ -46,6 +46,7 @@ function Rather({roomData,name, setRather, userData, rather, players, admin}) {
         socket.on("advanceRather", (data) => {
             setResults(data)
             setNumber(2)
+            console.log(data)
         })
 
     }, [choice])

@@ -32,6 +32,7 @@ function Lobby({setRoomData, setPlayers, roomData, userData, setStart, setUser, 
 
         })
         socket.on("start", (data)=> {
+            console.log(data)
             setStart(true)
             if (gameMode) {
                 history(routerDict["lite"][data["state"]["name"]])

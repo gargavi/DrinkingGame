@@ -7,6 +7,7 @@ const routerDict = {
         "Most Likely": "/likelylite", 
         "Trivia Drink": "/trivia", 
         "Would You Rather": "/ratherlite", 
+        "Categories": "/categoryLite",
         "dice": "/die", 
         "leader": "/leader"
     }, 
@@ -15,7 +16,8 @@ const routerDict = {
         "Trivia Drink": "/trivia", 
         "Would You Rather": "/rather", 
         "dice": "/die", 
-        "leader": "/leader"
+        "leader": "/leader",
+        "Categories": "/category"
     }
 }
 

@@ -9,7 +9,6 @@ import endpoint from "../../endpoint";
 import {AutoSizeText, ResizeTextMode} from "react-native-auto-size-text"
 
 import { setTrivia } from "./minigameSlice";
-import characters from "../../characters/character_info";
 
 function Trivia({roomData,name,setTrivia,userData, trivia, players, admin}) {
     const [number, setNumber] = useState(0)

@@ -6,6 +6,7 @@ export const minigameSlice = createSlice({
     likely: [], 
     rather: [], 
     trivia: [], 
+    categories: [],
     
   },
   reducers: {
@@ -18,10 +19,13 @@ export const minigameSlice = createSlice({
     setTrivia: (state, action) => {
       state.trivia = action.payload
     },
+    setCategories: (state, action) => {
+      state.categories = action.payload
+    },
   },
 });
 
-export const {setLikely, setRather, setTrivia} = minigameSlice.actions;
+export const {setLikely, setRather, setTrivia, setCategories} = minigameSlice.actions;
 
 
 export default minigameSlice.reducer;
