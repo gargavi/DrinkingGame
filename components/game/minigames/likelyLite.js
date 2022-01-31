@@ -64,7 +64,8 @@ function Likely({roomData,setLikely, userData, likely, players, admin}) {
         setTransition(true)
         setTimeout(() => {
             socket.emit("nextGame",{id: userData["_id"]}, () => {
-            })    
+            })
+            console.log("extgame")
             setNumber(0)
             setTime(30)
             setPenalty(null)

@@ -29,6 +29,7 @@ function Trivia({roomData,name,setTrivia,userData, trivia, players, admin}) {
             }
             setTimeout(() => {
                 setNumber(2)
+                advance()
             }, 2000)
             return ;
         } 
@@ -51,6 +52,7 @@ function Trivia({roomData,name,setTrivia,userData, trivia, players, admin}) {
                 alert(data["errors"])
             } else {
                 setNumber(2)
+                console.log(data)
                 setPenalty(data)
             }
         })
@@ -92,7 +94,7 @@ function Trivia({roomData,name,setTrivia,userData, trivia, players, admin}) {
         }
     }
 
-
+    console.log(number)
 
     function nextGame() { 
         socket.emit("nextGame",{id: userData["_id"]}, () => {
@@ -168,7 +170,7 @@ function Trivia({roomData,name,setTrivia,userData, trivia, players, admin}) {
 
             {/* {time <= 0 && number == 1 && <Pressable onPress= {() => advance()} style = {styles.Button}><Text style = {styles.ButtonText}> Next </Text></Pressable>}
              */}
-            {number == 2 && penalty && 
+            {number == 2 && 
             <Pressable style = {styles.answer} onPress = {() => nextGame()}>
                 {correct && 
                 <View style = {styles.finalcont}>
